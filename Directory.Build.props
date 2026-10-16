@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <Copyright>RainbowSense</Copyright>
+    <Authors>RainbowSense</Authors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <NoWarn>$(NoWarn);NU1701;RS1035</NoWarn>
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <RainbowSenseRoslynVersion>5.9.0</RainbowSenseRoslynVersion>
+    <RainbowSenseVisualStudioSdkVersion>17.14.40265</RainbowSenseVisualStudioSdkVersion>
+  </PropertyGroup>
+
+</Project>

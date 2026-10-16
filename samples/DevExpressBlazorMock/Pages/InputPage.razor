@@ -1,0 +1,42 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Mock</PageTitle>
+
+<InputText Value="@Value" />
+
+<EditForm Model="@Person">
+    <DataAnnotationsValidator />
+    <InputNumber Value="@Person.Age" />
+    <InputSelect Value="@Person.City">
+        <option>Rome</option>
+    </InputSelect>
+    <ValidationSummary />
+</EditForm>
+
+<AuthorizeView>
+    <Authorized>
+        <Virtualize Items="@Items" />
+    </Authorized>
+</AuthorizeView>
+
+<ul>
+    @foreach (string item in Items)
+    {
+        <li>@item</li>
+    }
+</ul>
+
+@code {
+    private string Value { get; set; } = string.Empty;
+
+    private List<string> Items { get; } = new List<string> { "a", "b" };
+
+    private PersonModel Person { get; } = new PersonModel();
+
+    public class PersonModel
+    {
+        public int Age { get; set; }
+
+        public string City { get; set; }
+    }
+}

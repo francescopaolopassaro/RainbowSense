@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>RainbowSense.Tests</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>$(NoWarn);RS1035;CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="DevExpress.Blazor" Version="26.1.5" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RainbowSenseRoslynVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Configuration\RainbowSenseOptions.cs" Link="Source\RainbowSenseOptions.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Configuration\RainbowSenseOptionsStore.cs" Link="Source\RainbowSenseOptionsStore.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\RainbowCompletionContext.cs" Link="Source\RainbowCompletionContext.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\RainbowCompletionBuilder.cs" Link="Source\RainbowCompletionBuilder.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\RainbowCompletionItems.cs" Link="Source\RainbowCompletionItems.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\BlazorDirectivesCatalog.cs" Link="Source\Catalogs\BlazorDirectivesCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\BlazorInjectablesCatalog.cs" Link="Source\Catalogs\BlazorInjectablesCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\RazorComponentsCatalog.cs" Link="Source\Catalogs\RazorComponentsCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\DevExpressComponentsCatalog.cs" Link="Source\Catalogs\DevExpressComponentsCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\DevExpressNamespacesCatalog.cs" Link="Source\Catalogs\DevExpressNamespacesCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\DevExpressMembersCatalog.cs" Link="Source\Catalogs\DevExpressMembersCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\RazorMembersCatalog.cs" Link="Source\Catalogs\RazorMembersCatalog.cs" />
+    <Compile Include="..\..\src\RainbowSense.VisualStudio\Completion\Catalogs\ComponentSnippetsCatalog.cs" Link="Source\Catalogs\ComponentSnippetsCatalog.cs" />
+    <Compile Include="DevExpressCatalogTests.cs" />
+    <Compile Include="RazorCatalogTests.cs" />
+    <Compile Include="CompletionContextTests.cs" />
+    <Compile Include="CompletionItemsTests.cs" />
+    <Compile Include="OptionsStoreTests.cs" />
+    <Compile Include="IntellisenseTests.cs" />
+  </ItemGroup>
+
+</Project>

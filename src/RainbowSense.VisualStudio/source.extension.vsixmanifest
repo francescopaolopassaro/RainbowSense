@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="3f1d0c6a-8b52-4a77-9c14-6ae5d2b7f830" Version="1.0.0" Language="en-US" Publisher="RainbowSense" />
+    <DisplayName>RainbowSense</DisplayName>
+    <Description xml:space="preserve">IntelliSense for Blazor and Razor markup, plus DevExpress Blazor component completion.</Description>
+    <MoreInfo>https://github.com/rainbowsense/rainbowsense</MoreInfo>
+    <License>LICENSE.txt</License>
+    <ReleaseNotes>https://github.com/rainbowsense/rainbowsense/blob/main/CHANGELOG.md</ReleaseNotes>
+    <Tags>Blazor;Razor;DevExpress;IntelliSense;Productivity</Tags>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Version="[17.14,)" Id="Microsoft.VisualStudio.Community">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+    <InstallationTarget Version="[17.14,)" Id="Microsoft.VisualStudio.Pro">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+    <InstallationTarget Version="[17.14,)" Id="Microsoft.VisualStudio.Enterprise">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,)" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+  </Assets>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0.25904.2,)" DisplayName="Visual Studio core editor" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.Roslyn.LanguageServices" Version="[15.0.25904.2,)" DisplayName="C# and Visual Basic" />
+  </Prerequisites>
+</PackageManifest>

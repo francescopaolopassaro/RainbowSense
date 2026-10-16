@@ -1,0 +1,65 @@
+@using DevExpress.Blazor
+
+<DxGrid Data="@Items">
+    <Columns>
+        <DxGridDataColumn Field="@nameof(Person.Name)" Caption="Name" />
+        <DxGridDataColumn Field="@nameof(Person.City)" Caption="City" />
+    </Columns>
+</DxGrid>
+
+<DxFormLayout>
+    <DxFormLayoutItem Caption="Name">
+        <DxTextBox Text="@Name" />
+    </DxFormLayoutItem>
+    <DxFormLayoutItem Caption="Active">
+        <DxCheckBox T="bool" Value="@IsActive" />
+    </DxFormLayoutItem>
+</DxFormLayout>
+
+<DxComboBox TData="string" TValue="string" DataSource="@Cities" Value="@City" />
+
+<DxChart T="ChartPoint">
+    <DxPlotArea>
+        <DxBarSeries T="ChartPoint" Series="@Points" />
+    </DxPlotArea>
+    <DxLegend />
+</DxChart>
+
+<DxScheduler />
+<DxTreeView />
+<DxPopup />
+
+@code {
+    private string Name { get; set; } = string.Empty;
+
+    private string City { get; set; } = string.Empty;
+
+    private bool IsActive { get; set; } = true;
+
+    private List<string> Cities { get; } = new List<string> { "Rome", "Milan" };
+
+    private List<ChartPoint> Points { get; } = new List<ChartPoint>
+    {
+        new ChartPoint { Value = 1, Name = "A" },
+    };
+
+    private List<Person> Items { get; } = new List<Person>
+    {
+        new Person { Name = "Ada", City = "Rome" },
+        new Person { Name = "Alan", City = "Milan" },
+    };
+
+    public class Person
+    {
+        public string Name { get; set; }
+
+        public string City { get; set; }
+    }
+
+    public class ChartPoint
+    {
+        public double Value { get; set; }
+
+        public string Name { get; set; }
+    }
+}

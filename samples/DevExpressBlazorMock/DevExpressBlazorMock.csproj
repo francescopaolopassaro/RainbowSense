@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DevExpressBlazorMock</RootNamespace>
+    <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DevExpress.Blazor" Version="26.1.5" />
+    <PackageReference Include="DevExpress.Blazor.Themes" Version="26.1.5" />
+  </ItemGroup>
+
+</Project>

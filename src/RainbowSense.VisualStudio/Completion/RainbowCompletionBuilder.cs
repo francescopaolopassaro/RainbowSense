@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.Completion;
 using RainbowSense.VisualStudio.Completion.Catalogs;
@@ -14,10 +15,15 @@ public static class RainbowCompletionBuilder
         if (context == null || !context.IsRazorFile || !context.IsMarkupContext)
             return items;
 
+        string prefix = context.IsTagContext ? context.TagName : null;
+
         if (options.EnableRazorComponentTags)
         {
             foreach (RazorComponent component in RazorComponentsCatalog.Items)
             {
+                if (!StartsWith(component.TagName, prefix))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateTag(
                     component.TagName,
                     component.Documentation + " " + component.NamespaceName,
@@ -29,6 +35,9 @@ public static class RainbowCompletionBuilder
         {
             foreach (DevExpressComponent component in DevExpressComponentsCatalog.Items)
             {
+                if (!StartsWith(component.TagName, prefix))
+                    continue;
+
                 if (context.TagName.Length > 0 && !IsRelated(context.TagName, component.TagName))
                     continue;
 
@@ -38,7 +47,7 @@ public static class RainbowCompletionBuilder
                     component.SortPrefix));
             }
 
-            if (options.IncludeDevExpressNamespacesInRazor)
+            if (options.IncludeDevExpressNamespacesInRazor && prefix == null)
             {
                 foreach (string ns in DevExpressNamespacesCatalog.Items)
                 {
@@ -49,6 +58,9 @@ public static class RainbowCompletionBuilder
 
         foreach (ComponentSnippet snippet in ComponentSnippetsCatalog.Items)
         {
+            if (!StartsWith(snippet.TagName, prefix))
+                continue;
+
             items.Add(RainbowCompletionItems.CreateTagSnippet(snippet.TagName, snippet.Skeleton, snippet.Documentation));
         }
 
@@ -56,14 +68,20 @@ public static class RainbowCompletionBuilder
         {
             foreach (BlazorDirective directive in BlazorDirectivesCatalog.Items)
             {
+                if (!StartsWith(directive.Name, context.Line))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateDirectiveSnippet(directive.Name, directive.InsertionText, directive.Documentation));
             }
         }
 
-        if (options.EnableBlazorInjectables)
+        if (options.EnableBlazorInjectables && !context.IsTagContext)
         {
             foreach (BlazorInjectable injectable in BlazorInjectablesCatalog.Items)
             {
+                if (!StartsWith("@" + injectable.TypeName, context.Line))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateParameter(
                     "@inject " + injectable.TypeName,
                     injectable.DefaultName,
@@ -81,9 +99,11 @@ public static class RainbowCompletionBuilder
         if (context == null || !context.IsRazorFile)
             return items;
 
+        string prefix = context.AttributeName;
+
         foreach (KeyValuePair<string, string> pair in CommonAttributes)
         {
-            if (!pair.Key.StartsWith(context.AttributeName, System.StringComparison.Ordinal))
+            if (!StartsWith(pair.Key, prefix))
                 continue;
 
             items.Add(RainbowCompletionItems.CreateDirectiveAttribute(pair.Key, pair.Value));
@@ -97,7 +117,7 @@ public static class RainbowCompletionBuilder
 
             foreach (string name in DevExpressMembersCatalog.GetParameterNames(typeName))
             {
-                if (!name.StartsWith(context.AttributeName, System.StringComparison.Ordinal))
+                if (!StartsWith(name, prefix))
                     continue;
 
                 string memberType = DevExpressMembersCatalog.GetTypeName(typeName, name);
@@ -114,7 +134,7 @@ public static class RainbowCompletionBuilder
 
             foreach (string name in RazorMembersCatalog.GetParameterNames(typeName))
             {
-                if (!name.StartsWith(context.AttributeName, System.StringComparison.Ordinal))
+                if (!StartsWith(name, prefix))
                     continue;
 
                 string memberType = RazorMembersCatalog.GetTypeName(typeName, name);
@@ -136,8 +156,13 @@ public static class RainbowCompletionBuilder
         if (!options.EnableBlazorDirectives)
             return items;
 
+        string prefix = TypedPrefix(context);
+
         foreach (BlazorDirective directive in BlazorDirectivesCatalog.Items)
         {
+            if (!StartsWith(directive.Name, prefix))
+                continue;
+
             items.Add(RainbowCompletionItems.CreateDirectiveSnippet(directive.Name, directive.InsertionText, directive.Documentation));
         }
 
@@ -145,6 +170,9 @@ public static class RainbowCompletionBuilder
         {
             foreach (BlazorInjectable injectable in BlazorInjectablesCatalog.Items)
             {
+                if (!StartsWith("@" + injectable.TypeName, prefix))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateDirectiveSnippet("@inject", injectable.InsertionText, injectable.Documentation));
             }
         }
@@ -153,6 +181,9 @@ public static class RainbowCompletionBuilder
         {
             foreach (string ns in DevExpressNamespacesCatalog.Items)
             {
+                if (!StartsWith(ns, prefix))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateDirectiveSnippet("@using " + ns, "@using " + ns, "Imports the " + ns + " namespace."));
             }
         }
@@ -167,15 +198,23 @@ public static class RainbowCompletionBuilder
         if (context == null || !context.IsRazorFile || !context.IsUsingContext)
             return items;
 
+        string prefix = context.Line.Length >= 7 ? context.Line.Substring(7).TrimStart() : string.Empty;
+
         if (options.IncludeDevExpressNamespacesInRazor)
         {
             foreach (string ns in DevExpressNamespacesCatalog.Items)
             {
+                if (!StartsWith(ns, prefix))
+                    continue;
+
                 items.Add(RainbowCompletionItems.CreateNamespace(ns, "DevExpress Blazor " + DevExpressComponentsCatalog.Version + " namespace."));
             }
         }
 
-        items.Add(RainbowCompletionItems.CreateDirective("@using", "Imports a namespace in the generated code."));
+        if (options.EnableBlazorDirectives && StartsWith("@using", prefix))
+        {
+            items.Add(RainbowCompletionItems.CreateDirective("@using", "Imports a namespace in the generated code."));
+        }
 
         return RainbowCompletionItems.Order(items, context, options);
     }
@@ -183,7 +222,7 @@ public static class RainbowCompletionBuilder
     public static IReadOnlyList<CompletionItem> GetItems(RainbowCompletionContext context, RainbowSenseOptions options)
     {
         if (context == null || !context.IsRazorFile)
-            return new List<CompletionItem>();
+            return Array.Empty<CompletionItem>();
 
         if (context.IsUsingContext)
             return GetUsingItems(context, options);
@@ -197,10 +236,28 @@ public static class RainbowCompletionBuilder
         return GetMarkupItems(context, options);
     }
 
+    private static string TypedPrefix(RainbowCompletionContext context)
+    {
+        int index = context.Line.LastIndexOf('@');
+
+        return index < 0 ? string.Empty : context.Line.Substring(index);
+    }
+
+    private static bool StartsWith(string value, string prefix)
+    {
+        if (string.IsNullOrEmpty(prefix))
+            return true;
+
+        if (value == null)
+            return false;
+
+        return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+    }
+
     private static bool IsRelated(string tagName, string componentTag)
     {
-        return componentTag.StartsWith(tagName, System.StringComparison.Ordinal)
-            || tagName.StartsWith(componentTag, System.StringComparison.Ordinal);
+        return componentTag.StartsWith(tagName, StringComparison.Ordinal)
+            || tagName.StartsWith(componentTag, StringComparison.Ordinal);
     }
 
     private static readonly KeyValuePair<string, string>[] CommonAttributes =

@@ -25,6 +25,67 @@ public class IntellisenseTests
     }
 
     [Fact]
+    public void FiltersByTypedTagBeforeTruncating()
+    {
+        RainbowSenseOptions options = new RainbowSenseOptions { MaxComponentResults = 5 };
+
+        RainbowCompletionContext context = RainbowCompletionContext.Create("Index.razor", "<DxPieC", 6);
+
+        IReadOnlyList<CompletionItem> items = RainbowCompletionBuilder.GetItems(context, options);
+
+        Assert.Contains(items, x => x.DisplayText == "<DxPieChart>");
+        Assert.True(items.Count <= 5);
+    }
+
+    [Fact]
+    public void DirectivesAreFilteredByTypedPrefix()
+    {
+        RainbowCompletionContext context = RainbowCompletionContext.Create("Index.razor", "@imp", 4);
+
+        IReadOnlyList<CompletionItem> items = RainbowCompletionBuilder.GetItems(context, new RainbowSenseOptions());
+
+        Assert.NotEmpty(items);
+        Assert.All(items, x => Assert.StartsWith("@imp", x.DisplayText, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void NoDuplicateItems()
+    {
+        IReadOnlyList<CompletionItem> items = Complete("<");
+
+        List<string> duplicates = items
+            .GroupBy(x => x.DisplayText, StringComparer.Ordinal)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToList();
+
+        Assert.Empty(duplicates);
+    }
+
+    [Fact]
+    public void MarkupItemsStayWithinLimitWithAllCategories()
+    {
+        RainbowSenseOptions options = new RainbowSenseOptions { MaxComponentResults = 100 };
+
+        RainbowCompletionContext context = RainbowCompletionContext.Create("Index.razor", "<", 1);
+
+        IReadOnlyList<CompletionItem> items = RainbowCompletionBuilder.GetItems(context, options);
+
+        Assert.True(items.Count <= 100, "items=" + items.Count);
+    }
+
+    [Fact]
+    public void DescriptionsAreAvailableForEveryItem()
+    {
+        IReadOnlyList<CompletionItem> items = Complete("<Dx");
+
+        Assert.NotEmpty(items);
+
+        foreach (CompletionItem item in items)
+            Assert.False(string.IsNullOrEmpty(RainbowCompletionItems.GetDescription(item)));
+    }
+
+    [Fact]
     public void CompletesDevExpressTagsInMarkup()
     {
         IReadOnlyList<CompletionItem> items = Complete("<");

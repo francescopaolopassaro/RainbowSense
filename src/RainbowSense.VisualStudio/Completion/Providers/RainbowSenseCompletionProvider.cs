@@ -8,7 +8,7 @@ namespace RainbowSense.VisualStudio.Completion.Providers;
 
 [Export(typeof(CompletionProvider))]
 [Shared]
-public sealed class BlazorCompletionProvider : CompletionProvider
+public sealed class RainbowSenseCompletionProvider : CompletionProvider
 {
     public override async Task ProvideCompletionsAsync(CompletionContext context)
     {
@@ -17,12 +17,14 @@ public sealed class BlazorCompletionProvider : CompletionProvider
 
         RainbowSenseOptions options = RainbowSenseOptionsStore.CloneCurrent();
 
-        RainbowCompletionContext razorContext = await RainbowCompletionContext.CreateAsync(context.Document, context.Position).ConfigureAwait(false);
+        RainbowCompletionContext razorContext = await RainbowCompletionContext
+            .CreateAsync(context.Document, context.Position)
+            .ConfigureAwait(false);
 
         if (razorContext == null || !razorContext.IsRazorFile)
             return;
 
-        System.Collections.Generic.IReadOnlyList<CompletionItem> items = RainbowCompletionBuilder.GetItems(razorContext, options);
+        var items = RainbowCompletionBuilder.GetItems(razorContext, options);
 
         if (items.Count == 0)
             return;

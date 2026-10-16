@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Threading;
+using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using RainbowSense.VisualStudio.Configuration;
@@ -16,121 +16,82 @@ public static class RainbowCompletionItems
     public const string EventTag = "event";
     public const string SnippetTag = "snippet";
 
-    private static readonly Dictionary<CompletionItem, string> _descriptions = new Dictionary<CompletionItem, string>();
+    private static readonly ConditionalWeakTable<CompletionItem, DescriptionHolder> _descriptions = new ConditionalWeakTable<CompletionItem, DescriptionHolder>();
 
     public static CompletionItem CreateTag(string tagName, string documentation, string sortPrefix = null)
     {
-        string displayText = "<" + tagName + ">";
-
-        CompletionItem item = Create(
-            displayText,
-            null,
-            -1,
-            (sortPrefix ?? string.Empty) + tagName,
+        return Create(
+            "<" + tagName + ">",
             tagName,
-            ImmutableArray.Create(BlazorTag, DevExpressTag));
-
-        Register(item, documentation);
-
-        return item;
+            (sortPrefix ?? string.Empty) + tagName,
+            ImmutableArray.Create(BlazorTag, DevExpressTag),
+            documentation);
     }
 
     public static CompletionItem CreateTagSnippet(string tagName, string skeleton, string documentation)
     {
-        int invocationPosition = skeleton.Length;
-
-        CompletionItem item = Create(
+        return Create(
             skeleton,
-            null,
-            invocationPosition,
-            "0" + tagName,
             tagName,
-            ImmutableArray.Create(BlazorTag, DevExpressTag, SnippetTag));
-
-        Register(item, documentation);
-
-        return item;
+            "0" + tagName,
+            ImmutableArray.Create(BlazorTag, DevExpressTag, SnippetTag),
+            documentation);
     }
 
     public static CompletionItem CreateDirective(string name, string documentation)
     {
-        CompletionItem item = Create(
+        return Create(
             name,
-            null,
-            -1,
+            name,
             "0" + name,
-            name,
-            ImmutableArray.Create(RazorDirective));
-
-        Register(item, documentation);
-
-        return item;
+            ImmutableArray.Create(RazorDirective),
+            documentation);
     }
 
     public static CompletionItem CreateDirectiveSnippet(string name, string skeleton, string documentation)
     {
-        CompletionItem item = Create(
+        return Create(
             skeleton,
-            null,
-            skeleton.Length,
-            "0" + name,
             name,
-            ImmutableArray.Create(RazorDirective, SnippetTag));
-
-        Register(item, documentation);
-
-        return item;
+            "0" + name,
+            ImmutableArray.Create(RazorDirective, SnippetTag),
+            documentation);
     }
 
     public static CompletionItem CreateNamespace(string value, string documentation)
     {
-        CompletionItem item = Create(
+        return Create(
             value,
-            null,
-            -1,
+            value,
             "1" + value,
-            value,
-            ImmutableArray.Create(DevExpressTag));
-
-        Register(item, documentation);
-
-        return item;
+            ImmutableArray.Create(DevExpressTag),
+            documentation);
     }
 
     public static CompletionItem CreateParameter(string name, string typeName, string documentation)
     {
-        CompletionItem item = Create(
+        return Create(
             name,
-            null,
-            -1,
+            name,
             "2" + name,
-            name,
-            ImmutableArray.Create(ParameterTag));
-
-        Register(item, string.IsNullOrEmpty(documentation) ? typeName + " " + name : documentation);
-
-        return item;
+            ImmutableArray.Create(ParameterTag),
+            string.IsNullOrEmpty(documentation) ? typeName + " " + name : documentation);
     }
 
     public static CompletionItem CreateDirectiveAttribute(string name, string documentation)
     {
-        CompletionItem item = Create(
+        return Create(
             name,
-            null,
-            -1,
+            name,
             "3" + name,
-            name,
-            ImmutableArray.Create(ParameterTag, EventTag));
-
-        Register(item, documentation);
-
-        return item;
+            ImmutableArray.Create(ParameterTag, EventTag),
+            documentation);
     }
 
     public static string GetDescription(CompletionItem item)
     {
-        if (item != null && _descriptions.TryGetValue(item, out string description))
-            return description;
+        if (item != null && _descriptions.TryGetValue(item, out DescriptionHolder holder))
+            return holder.Description;
 
         return null;
     }
@@ -143,18 +104,14 @@ public static class RainbowCompletionItems
         {
             foreach (CompletionItem item in items)
             {
-                if (item.Tags.IsDefaultOrEmpty || !item.Tags.Contains(BlazorTag))
-                    continue;
-
-                list.Add(item);
+                if (HasTag(item, BlazorTag))
+                    list.Add(item);
             }
 
             foreach (CompletionItem item in items)
             {
-                if (item.Tags.IsDefaultOrEmpty || item.Tags.Contains(BlazorTag))
-                    continue;
-
-                list.Add(item);
+                if (!HasTag(item, BlazorTag))
+                    list.Add(item);
             }
         }
         else
@@ -176,13 +133,33 @@ public static class RainbowCompletionItems
         return items.ToImmutableArray();
     }
 
+    public static bool Matches(CompletionItem item, string prefix)
+    {
+        if (string.IsNullOrEmpty(prefix))
+            return true;
+
+        if (HasTag(item, SnippetTag))
+            return FilterOf(item).StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase);
+
+        return FilterOf(item).StartsWith(prefix, System.StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FilterOf(CompletionItem item)
+    {
+        return string.IsNullOrEmpty(item.FilterText) ? item.DisplayText : item.FilterText;
+    }
+
+    private static bool HasTag(CompletionItem item, string tag)
+    {
+        return !item.Tags.IsDefaultOrEmpty && item.Tags.Contains(tag);
+    }
+
     private static CompletionItem Create(
         string displayText,
-        string displayTextPrefix,
-        int invocationPosition,
-        string sortText,
         string filterText,
-        ImmutableArray<string> tags)
+        string sortText,
+        ImmutableArray<string> tags,
+        string description)
     {
         CompletionItem item = CompletionItem.Create(
             displayText,
@@ -190,20 +167,25 @@ public static class RainbowCompletionItems
             sortText,
             ImmutableDictionary<string, string>.Empty,
             tags,
-            default,
-            displayTextPrefix);
+            default)
+            .WithFilterText(filterText);
 
-        return string.IsNullOrEmpty(filterText) ? item : item.WithFilterText(filterText);
+        if (!string.IsNullOrEmpty(description))
+            _descriptions.Remove(item);
+
+        if (!string.IsNullOrEmpty(description))
+            _descriptions.Add(item, new DescriptionHolder(description));
+
+        return item;
     }
 
-    private static void Register(CompletionItem item, string description)
+    private sealed class DescriptionHolder
     {
-        if (string.IsNullOrEmpty(description))
-            return;
-
-        lock (_descriptions)
+        public DescriptionHolder(string description)
         {
-            _descriptions[item] = description;
+            Description = description;
         }
+
+        public string Description { get; }
     }
 }

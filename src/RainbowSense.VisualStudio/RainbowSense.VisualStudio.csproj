@@ -68,8 +68,7 @@
     <Compile Include="Completion\RainbowCompletionContext.cs" />
     <Compile Include="Completion\RainbowCompletionItems.cs" />
     <Compile Include="Completion\RainbowCompletionBuilder.cs" />
-    <Compile Include="Completion\Providers\BlazorCompletionProvider.cs" />
-    <Compile Include="Completion\Providers\RazorDirectiveCompletionProvider.cs" />
+    <Compile Include="Completion\Providers\RainbowSenseCompletionProvider.cs" />
     <Compile Include="Completion\Providers\DevExpressCompletionProvider.cs" />
     <Compile Include="Completion\Catalogs\BlazorDirectivesCatalog.cs" />
     <Compile Include="Completion\Catalogs\BlazorInjectablesCatalog.cs" />
